@@ -39,10 +39,31 @@ int main(int argc, char **argv)
     int local_index;                                  // Local variable for index from shared memory
     const char *semName = "shd_mem_sem";              // Name of the semaphore
 
+    // Create a named semaphore for displaying output
+    sem_t *display_sem = sem_open(display_semaphore_name, O_CREAT, 0660, 1);
+    if (display_sem == SEM_FAILED)
+    {
+        printf("Slave: sem_open failed: %s\n", strerror(errno));
+        exit(1);
+    }
+
+    // Acquire access to monitor for output
+    if (sem_wait(display_sem) == -1)
+    {
+        printf("Slave: sem_wait(display_sem) failed: %s\n", strerror(errno));
+        exit(1);
+    }
+
     // Print child number and shared memory name
-    printf("Slave begins execution\n");
+    printf("\nSlave begins execution\n");
     printf("I am child number %d, received shared memory name %s\n", child_num, shared_mem_name);
-    printf("\n The name for display sempahore is: %s\n", display_semaphore_name);
+
+    // Done with output. Unlock monitor
+    if (sem_post(display_sem) == -1)
+    {
+        printf("Slave: sem_post(display_sem) failed: %s\n", strerror(errno));
+        exit(1);
+    }
 
     // Open the shared memory segment
     shared_mem_fd = shm_open(shared_mem_name, O_RDWR, 0666);
@@ -64,7 +85,23 @@ int main(int argc, char **argv)
         }
         else
         {
+
+            // Acquire access to monitor for output
+            if (sem_wait(display_sem) == -1)
+            {
+                printf("Slave: sem_wait(display_sem) failed: %s\n", strerror(errno));
+                exit(1);
+            }
+
             printf("Slave acquires access to shared memory segment, and structures it according to struct SHARED_MEM_CLASS\n");
+
+            // Done with output. Unlock monitor
+            if (sem_post(display_sem) == -1)
+            {
+                printf("Slave: sem_post(display_sem) failed: %s\n", strerror(errno));
+                exit(1);
+            }
+
             // Create a named sempahore
             sem_t *mutex_sem = sem_open(semName, O_CREAT, 0660, 1);
             if (mutex_sem == SEM_FAILED)
@@ -86,6 +123,12 @@ int main(int argc, char **argv)
                 printf("slave: sem_wait failed: %s\n", strerror(errno));
                 exit(1);
             }
+            // Acquire access to monitor for output
+            if (sem_wait(display_sem) == -1)
+            {
+                printf("Slave: sem_wait(display_sem) failed: %s\n", strerror(errno));
+                exit(1);
+            }
 
             // Copy shared memory index to local variable index
             local_index = shared_mem_struct->index;
@@ -97,6 +140,12 @@ int main(int argc, char **argv)
             printf("Slave writes its child number in response[%d]\n", local_index);
             printf("Slave increments index\n");
 
+            // Done with output. Unlock monitor
+            if (sem_post(display_sem) == -1)
+            {
+                printf("Slave: sem_post(display_sem) failed: %s\n", strerror(errno));
+                exit(1);
+            }
             // Exit critical section after writing to shared memory
             if (sem_post(mutex_sem) == -1)
             {
@@ -125,11 +174,36 @@ int main(int argc, char **argv)
             printf("\nSlave %d: Close failed: %s\n", child_num, strerror(errno));
             exit(1);
         }
-        else
-            printf("Slave closes access to shared memory segment\n");
 
+        // Acquire access to monitor for output
+        if (sem_wait(display_sem) == -1)
+        {
+            printf("Slave: sem_wait(display_sem) failed: %s\n", strerror(errno));
+            exit(1);
+        }
+
+        printf("Slave closes access to shared memory segment\n");
         printf("I have written my child number [%d] to response[%d] in shared memory\n", child_num, local_index);
-        printf("Slave closes access to shared memory and terminates\n");
+        printf("Slave closed access to shared memory and terminates\n");
+
+        // Done with output. Unlock monitor
+        if (sem_post(display_sem) == -1)
+        {
+            printf("Slave: sem_post(display_sem) failed: %s\n", strerror(errno));
+            exit(1);
+        }
+
+        // Done using monitor, close display semaphore and remove its name
+        if (sem_close(display_sem) == -1)
+        {
+            printf("Slave: sem_close(display_sem) failed: %s\n", strerror(errno));
+            exit(1);
+        }
+        if (sem_unlink(display_semaphore_name) == -1)
+        {
+            printf("Slave: sem_unlink(display_semaphore_name) failed: %s\n", strerror(errno));
+            exit(1);
+        }
     }
 
     return 0;
