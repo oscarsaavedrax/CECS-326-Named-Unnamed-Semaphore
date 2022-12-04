@@ -32,6 +32,7 @@ int main(int argc, char **argv)
     // Create variables
     const int child_num = atoi(argv[0]);              // child number
     const char *shared_mem_name = argv[1];            // name of shared memory
+    const char *display_semaphore_name = argv[2];     // name of display semaphore
     const int SIZE = sizeof(struct SHARED_MEM_CLASS); // size of struct object
     struct SHARED_MEM_CLASS *shared_mem_struct;       // structure of shared memory
     int shared_mem_fd;                                // shared memory file descriptor
@@ -41,6 +42,7 @@ int main(int argc, char **argv)
     // Print child number and shared memory name
     printf("Slave begins execution\n");
     printf("I am child number %d, received shared memory name %s\n", child_num, shared_mem_name);
+    printf("\n The name for display sempahore is: %s\n", display_semaphore_name);
 
     // Open the shared memory segment
     shared_mem_fd = shm_open(shared_mem_name, O_RDWR, 0666);
@@ -124,7 +126,7 @@ int main(int argc, char **argv)
             exit(1);
         }
         else
-            printf("Slave closes access to shared memory segment");
+            printf("Slave closes access to shared memory segment\n");
 
         printf("I have written my child number [%d] to response[%d] in shared memory\n", child_num, local_index);
         printf("Slave closes access to shared memory and terminates\n");
