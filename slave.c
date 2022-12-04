@@ -112,7 +112,7 @@ int main(int argc, char **argv)
                 exit(1);
             }*/
             // Initialize unnamed semaphore to 1 and nanoset it to shared
-            if (sem_init(shared_memory_semaphore, 0, 1) == -1)
+            if (sem_init(&(shared_memory_semaphore), 0, 1) == -1)
             {
                 printf("Slave: sem_init failed: %s\n", strerror(errno));
                 exit(1);
@@ -127,7 +127,7 @@ int main(int argc, char **argv)
             }*/
 
             // Critical section to write to shared memory
-            if (sem_wait(shared_memory_semaphore) == -1)
+            if (sem_wait(&(shared_memory_semaphore)) == -1)
             {
                 printf("Slave: sem_wait failed: %s\n", strerror(errno));
                 exit(1);
@@ -156,14 +156,14 @@ int main(int argc, char **argv)
                 exit(1);
             }
             // Exit critical section after writing to shared memory
-            if (sem_post(shared_memory_semaphore) == -1)
+            if (sem_post(&(shared_memory_semaphore)) == -1)
             {
                 printf("slave: sem_post failed: %s\n", strerror(errno));
                 exit(1);
             }
 
             // Done needing semphore, close it to free it up
-            if (sem_destroy(shared_memory_semaphore) == -1)
+            if (sem_destroy(&(shared_memory_semaphore)) == -1)
             {
                 printf("Slave: sem_destroy failed: %s\n", strerror(errno));
                 exit(1);
