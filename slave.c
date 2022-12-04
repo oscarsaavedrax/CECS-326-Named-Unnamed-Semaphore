@@ -37,7 +37,6 @@ int main(int argc, char **argv)
     struct SHARED_MEM_CLASS *shared_mem_struct;       // structure of shared memory
     int shared_mem_fd;                                // shared memory file descriptor
     int local_index;                                  // Local variable for index from shared memory
-    const char *semName = "shd_mem_sem";              // Name of the semaphore
     sem_t shared_memory_semaphore;                    // uunamed semaphore for shared memory access
 
     // Create a named semaphore for displaying output
@@ -103,28 +102,12 @@ int main(int argc, char **argv)
                 exit(1);
             }
 
-            /*
-            // Create a named sempahore
-            sem_t *mutex_sem = sem_open(semName, O_CREAT, 0660, 1);
-            if (mutex_sem == SEM_FAILED)
-            {
-                printf("slave: sem_open failed: %s\n", strerror(errno));
-                exit(1);
-            }*/
             // Initialize unnamed semaphore to 1 and nanoset it to shared
             if (sem_init(&(shared_memory_semaphore), 0, 1) == -1)
             {
                 printf("Slave: sem_init failed: %s\n", strerror(errno));
                 exit(1);
             }
-
-            /*
-            // Request to remove the named semaphore after all references to it are done
-            if (sem_unlink(semName) == -1)
-            {
-                printf("slave: sem_unlink failed: %s\n", strerror(errno));
-                exit(1);
-            }*/
 
             // Critical section to write to shared memory
             if (sem_wait(&(shared_memory_semaphore)) == -1)
