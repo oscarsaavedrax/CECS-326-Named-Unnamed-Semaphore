@@ -191,11 +191,11 @@ int main(int argc, char **argv)
             printf("Slave: sem_close(display_sem) failed: %s\n", strerror(errno));
             exit(1);
         }
-        if (sem_unlink(display_semaphore_name) == -1)
+       /* if (sem_unlink(display_semaphore_name) == -1)
         {
             printf("Slave: sem_unlink(display_semaphore_name) failed: %s\n", strerror(errno));
             exit(1);
-        }
+        }*/
     }
 
     return 0;
