@@ -1,7 +1,7 @@
 /***********************************************************************
  * Programmer	: Oscar Saavedra
  * Class	    : CECS 326-01
- * Due Date	    : November 5, 2022
+ * Due Date	    : December 1, 2022
  * Description	: This program makes use of the POSIX implementation of
  *  the Linux shared memory mechanism. This master.c program takes in a
  *  name for the shared memory segment and the number of children to
@@ -92,6 +92,8 @@ int main(int argc, char **argv)
     // Wait for children to finish to terminate
     for (int i = 0; i < num_children; i++)
         wait(NULL);
+
+    // Print final output message from master process
     printf("\nMaster waits for all child processes to terminate\n");
     printf("Master received termination signals from all %d child processes\n", num_children);
 
@@ -120,10 +122,11 @@ int main(int argc, char **argv)
     // Unlink the display semaphore from its name
     if (sem_unlink(display_semaphore_name) == -1)
     {
-	    printf("Slave: sem_unlink(display_semaphore_name) failed: %s\n", strerror(errno));
-	    exit(1);
+        printf("Slave: sem_unlink(display_semaphore_name) failed: %s\n", strerror(errno));
+        exit(1);
     }
 
+    // Output exit prompt
     printf("Master removed shared memory segment and is exiting\n");
 
     return 0;

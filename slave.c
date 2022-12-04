@@ -1,15 +1,20 @@
 /***********************************************************************
  * Programmer	: Oscar Saavedra
  * Class	    : CECS 326-01
- * Due Date	    : November 5, 2022
+ * Due Date	    : December 1, 2022
  * Description	: This program makes use of the POSIX implementation of
  *  the Linux shared memory mechanism. This slave.c program receives its
- *  number and name of the shared memory segment via commandline
+ *  number, name of the shared memory segment, and the name of the
+ *  semaphore for accessing the display monitor via commandline
  *  arugments from master.c program. This program then outputs a message
  *  to identify itself. The program opens the existing shared memory
  *  segment, acquires access to it, and write its child number into the
- *  next available slot in the shared memory. The pgrogram then closes
- *  the shared memory segment and terminates.
+ *  next available slot in the shared memory. The program increments the
+ *  index for the next available slot in the shared memory. The program
+ *  uses a named semaphore to enforce mutual exclusion when displaying
+ *  output and an unnamed semaphore to enforce mutual exclusion when
+ *  accessing the shared memory segment. The program then closes
+ *  the shared memory segment, releases all locks, and terminates.
  ***********************************************************************/
 
 #include "myShm.h"
@@ -85,7 +90,6 @@ int main(int argc, char **argv)
         }
         else
         {
-
             // Acquire access to monitor for output
             if (sem_wait(display_sem) == -1)
             {
@@ -174,6 +178,7 @@ int main(int argc, char **argv)
             exit(1);
         }
 
+        // Output final message
         printf("Slave closes access to shared memory segment\n");
         printf("I have written my child number [%d] to response[%d] in shared memory\n", child_num, local_index);
         printf("Slave closed access to shared memory and terminates\n");
@@ -191,11 +196,6 @@ int main(int argc, char **argv)
             printf("Slave: sem_close(display_sem) failed: %s\n", strerror(errno));
             exit(1);
         }
-       /* if (sem_unlink(display_semaphore_name) == -1)
-        {
-            printf("Slave: sem_unlink(display_semaphore_name) failed: %s\n", strerror(errno));
-            exit(1);
-        }*/
     }
 
     return 0;
