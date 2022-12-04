@@ -62,6 +62,7 @@ int main(int argc, char **argv)
         }
         else
         {
+            printf("Slave acquires access to shared memory segment, and structures it according to struct SHARED_MEM_CLASS\n");
             // Create a named sempahore
             sem_t *mutex_sem = sem_open(semName, O_CREAT, 0660, 1);
             if (mutex_sem == SEM_FAILED)
@@ -86,10 +87,13 @@ int main(int argc, char **argv)
 
             // Copy shared memory index to local variable index
             local_index = shared_mem_struct->index;
+            printf("Slave copies index to local variable local_index\n");
 
             // Write to the shared memory segment
             shared_mem_struct->response[shared_mem_struct->index] = child_num;
             shared_mem_struct->index += 1;
+            printf("Slave writes its child number in response[%d]\n", local_index);
+            printf("Slave increments index\n");
 
             // Exit critical section after writing to shared memory
             if (sem_post(mutex_sem) == -1)
@@ -120,8 +124,9 @@ int main(int argc, char **argv)
             exit(1);
         }
         else
-            printf("I have written my child number [%d] to response[%d] in shared memory\n", child_num, local_index);
-        printf("Slave increments index\n");
+            printf("Slave closes access to shared memory segment");
+
+        printf("I have written my child number [%d] to response[%d] in shared memory\n", child_num, local_index);
         printf("Slave closes access to shared memory and terminates\n");
     }
 
