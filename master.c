@@ -26,6 +26,7 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <string.h>
+#include <semaphore.h>
 
 int main(int argc, char **argv)
 {
@@ -69,7 +70,7 @@ int main(int argc, char **argv)
     shared_mem_struct->index = 0;
 
     // Create n children
-    printf("Master created %d child processes to execute slave\n\n", num_children);
+    printf("Master created %d child processes to execute slave\n", num_children);
     for (int i = 0; i < num_children; i++)
     {
         // Fork a new child on each iteration
@@ -115,6 +116,13 @@ int main(int argc, char **argv)
 
     // Delete the shared memory segment
     shm_unlink(shared_mem_name);
+
+    // Unlink the display semaphore from its name
+    if (sem_unlink(display_semaphore_name) == -1)
+    {
+	    printf("Slave: sem_unlink(display_semaphore_name) failed: %s\n", strerror(errno));
+	    exit(1);
+    }
 
     printf("Master removed shared memory segment and is exiting\n");
 
